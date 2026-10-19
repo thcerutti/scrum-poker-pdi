@@ -12,30 +12,36 @@ export function isCardValue(value: unknown): value is CardValue {
   return typeof value === "string" && (CARD_VALUES as readonly string[]).includes(value);
 }
 
-export type AgreementLevel = "consensus" | "minor" | "divergent" | "none";
+/**
+ * - consensus / minor / divergent: dois ou mais votos numéricos, classificados pela
+ *   distância entre o menor e o maior na sequência do baralho (mesma carta, cartas
+ *   vizinhas, duas ou mais posições).
+ * - single: um único voto numérico, não há o que comparar.
+ * - coffee: só houve votos de pausa.
+ * - empty: a rodada foi revelada sem nenhum voto.
+ */
+export type AgreementLevel = "consensus" | "minor" | "divergent" | "single" | "coffee" | "empty";
 
 export interface VoteAnalysis {
   level: AgreementLevel;
   /** Quantidade de votos numéricos (sem contar pausa). */
   numericCount: number;
   coffeeCount: number;
+  /** Participantes da mesa que não votaram. */
+  missingCount: number;
   average: number | null;
   min: string | null;
   max: string | null;
-  /** Valor(es) mais votado(s). */
+  /** Valor(es) mais votado(s); vazio quando todos os valores empatam. */
   mostVoted: string[];
   /** Contagem por valor, na ordem do baralho. */
   distribution: { value: CardValue; count: number }[];
 }
 
-/**
- * Classifica o nível de concordância pela distância entre o menor e o maior voto
- * na sequência do baralho: mesma carta = consenso, cartas vizinhas = pequena
- * divergência, duas ou mais posições de distância = divergência.
- */
-export function analyzeVotes(votes: CardValue[]): VoteAnalysis {
+export function analyzeVotes(votes: CardValue[], participantCount: number): VoteAnalysis {
   const numeric = votes.filter((v) => v !== COFFEE);
   const coffeeCount = votes.length - numeric.length;
+  const missingCount = Math.max(0, participantCount - votes.length);
 
   const distribution = CARD_VALUES.map((value) => ({
     value,
@@ -44,9 +50,10 @@ export function analyzeVotes(votes: CardValue[]): VoteAnalysis {
 
   if (numeric.length === 0) {
     return {
-      level: "none",
+      level: coffeeCount > 0 ? "coffee" : "empty",
       numericCount: 0,
       coffeeCount,
+      missingCount,
       average: null,
       min: null,
       max: null,
@@ -65,13 +72,14 @@ export function analyzeVotes(votes: CardValue[]): VoteAnalysis {
   const top = numericDistribution.filter((d) => d.count === topCount).map((d) => d.value);
 
   return {
-    level: spread === 0 ? "consensus" : spread === 1 ? "minor" : "divergent",
+    level:
+      numeric.length === 1 ? "single" : spread === 0 ? "consensus" : spread === 1 ? "minor" : "divergent",
     numericCount: numeric.length,
     coffeeCount,
+    missingCount,
     average: numeric.reduce((sum, v) => sum + Number(v), 0) / numeric.length,
     min: POINTS[minIndex],
     max: POINTS[maxIndex],
-    // Se todos os valores empatam, não há "mais votado".
     mostVoted: top.length > 1 && top.length === numericDistribution.length ? [] : top,
     distribution,
   };

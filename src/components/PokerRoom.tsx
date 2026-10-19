@@ -128,7 +128,10 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
   const analysis = useMemo(
     () =>
       data?.revealed
-        ? analyzeVotes(data.participants.flatMap((p) => (p.vote ? [p.vote] : [])))
+        ? analyzeVotes(
+            data.participants.flatMap((p) => (p.vote ? [p.vote] : [])),
+            data.participants.length,
+          )
         : null,
     [data],
   );
@@ -159,7 +162,8 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
     if (!state?.revealed || state.gif) return;
     // Quem revela busca o GIF (o KLIPY exige a busca no navegador) e o compartilha com a sala.
     const votes = state.participants.flatMap((p) => (p.vote ? [p.vote] : []));
-    const gif = await fetchRevealGif(analyzeVotes(votes).level, user.id).catch(() => null);
+    const { level } = analyzeVotes(votes, state.participants.length);
+    const gif = await fetchRevealGif(level, user.id).catch(() => null);
     if (gif) run({ action: "gif", pid: user.id, round: state.round, gif });
   };
 

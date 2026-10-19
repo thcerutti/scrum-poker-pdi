@@ -12,7 +12,9 @@ const QUERIES: Record<AgreementLevel, string[]> = {
   consensus: ["celebration", "high five", "nailed it", "party", "victory dance"],
   minor: ["almost", "close enough", "so close", "thinking"],
   divergent: ["confused", "what", "debate", "shocked", "plot twist"],
-  none: ["coffee break", "coffee time"],
+  single: ["lonely", "waiting", "anybody"],
+  coffee: ["coffee break", "coffee time"],
+  empty: ["crickets", "empty room"],
 };
 
 /** Sorteia uma página entre as primeiras e usa o primeiro resultado dela, para

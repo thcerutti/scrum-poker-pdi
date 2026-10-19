@@ -1,5 +1,5 @@
 "use client";
-import Alert from "@mui/material/Alert";
+import Alert, { type AlertColor } from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -8,38 +8,70 @@ import Typography from "@mui/material/Typography";
 import { COFFEE, type VoteAnalysis } from "@/lib/deck";
 import { CARD_INFO } from "./cardInfo";
 
-const LEVEL_COPY = {
-  consensus: { severity: "success", title: "Consenso!", text: "Todos votaram no mesmo valor." },
-  minor: {
-    severity: "warning",
-    title: "Pequena divergência",
-    text: "Os votos ficaram em cartas vizinhas. Vale uma conversa rápida para alinhar.",
-  },
-  divergent: {
-    severity: "error",
-    title: "Divergência",
-    text: "Os votos estão distantes. Quem votou mais baixo e mais alto (destacados na mesa) pode explicar o raciocínio.",
-  },
-  none: { severity: "info", title: "Sem votos numéricos", text: "Ninguém votou em pontos nesta rodada." },
-} as const;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const points = (value: string) => `${value} ${value === "1" ? "ponto" : "pontos"}`;
+
+function describe(a: VoteAnalysis): { severity: AlertColor; title: string; text: string } {
+  // "Todos" só é verdade se ninguém ficou sem votar nem escolheu a pausa.
+  const partial = a.missingCount > 0 || a.coffeeCount > 0;
+  switch (a.level) {
+    case "consensus":
+      return partial
+        ? {
+            severity: "success",
+            title: "Consenso entre quem votou",
+            text: `Os ${a.numericCount} votos em pontos foram em ${points(a.min!)}.`,
+          }
+        : { severity: "success", title: "Consenso!", text: `Todos votaram em ${points(a.min!)}.` };
+    case "minor":
+      return {
+        severity: "warning",
+        title: "Pequena divergência",
+        text: `Os votos ficaram em cartas vizinhas (${a.min} e ${a.max}). Vale uma conversa rápida para alinhar.`,
+      };
+    case "divergent":
+      return {
+        severity: "error",
+        title: "Divergência",
+        text: `Os votos vão de ${a.min} a ${a.max} pontos. Quem votou mais baixo e mais alto (destacados na mesa) pode explicar o raciocínio.`,
+      };
+    case "single":
+      return {
+        severity: "info",
+        title: "Só um voto",
+        text: `Com um único voto (${points(a.min!)}) não dá para medir a concordância.`,
+      };
+    case "coffee":
+      return { severity: "info", title: "Pausa para o café", text: "Quem votou pediu uma pausa." };
+    case "empty":
+      return { severity: "info", title: "Nenhum voto", text: "A rodada foi revelada sem votos." };
+  }
+}
 
 const formatAverage = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
 
 export function ResultPanel({ analysis }: { analysis: VoteAnalysis }) {
-  const copy = LEVEL_COPY[analysis.level];
+  const copy = describe(analysis);
   const total = analysis.numericCount + analysis.coffeeCount;
+
+  // Ressalvas que valem para qualquer resultado: quem ficou de fora e quem pediu pausa.
+  const notes = [
+    analysis.missingCount > 0 &&
+      plural(analysis.missingCount, "pessoa não votou", "pessoas não votaram"),
+    analysis.coffeeCount > 0 &&
+      analysis.level !== "coffee" &&
+      plural(analysis.coffeeCount, "pessoa pediu pausa", "pessoas pediram pausa"),
+  ].filter(Boolean);
 
   return (
     <Stack spacing={2}>
       <Alert severity={copy.severity} variant="filled">
         <AlertTitle sx={{ fontWeight: 700 }}>{copy.title}</AlertTitle>
         {copy.text}
-        {analysis.level !== "consensus" && analysis.min !== null && analysis.level !== "none" && (
-          <> Votos de {analysis.min} a {analysis.max} pontos.</>
-        )}
+        {notes.length > 0 && <Box sx={{ mt: 0.5, opacity: 0.9 }}>{notes.join(" · ")}.</Box>}
       </Alert>
 
-      {analysis.level !== "none" && (
+      {analysis.numericCount > 1 && (
         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
           <Stat label="Média" value={formatAverage(analysis.average!)} />
           <Stat
