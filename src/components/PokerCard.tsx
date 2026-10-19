@@ -12,24 +12,27 @@ import { CARD_INFO } from "./cardInfo";
 function CardFrame({ children }: { children: React.ReactNode }) {
   return (
     <Box sx={{ width: "100%", containerType: "inline-size" }}>
-      <Box sx={{ aspectRatio: "5 / 7", borderRadius: "9cqw", p: "6cqw", bgcolor: "primary.main" }}>{children}</Box>
+      <Box sx={{ aspectRatio: "5 / 7", borderRadius: "9cqw", p: "6cqw", bgcolor: "var(--w2-acento-area-elevada)" }}>
+        {children}
+      </Box>
     </Box>
   );
 }
 
 export function CardFace({ value }: { value: CardValue }) {
-  const { Icon, iconColor, label } = CARD_INFO[value];
+  const { Icon, label } = CARD_INFO[value];
   const isCoffee = value === COFFEE;
 
   return (
     <CardFrame>
       <Box
+        className="w2-face-clara"
         sx={{
           position: "relative",
           height: "100%",
           borderRadius: "5cqw",
-          bgcolor: "#FFFFFF",
-          color: "#1A1A1A",
+          bgcolor: "var(--w2-superficie)",
+          color: "var(--w2-texto)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -45,23 +48,30 @@ export function CardFace({ value }: { value: CardValue }) {
           </Box>
         )}
         {isCoffee ? (
-          <Icon sx={{ fontSize: "60cqw", color: iconColor }} />
+          <Icon sx={{ fontSize: "60cqw", color: "var(--w2-acento)" }} />
         ) : (
-          <Box component="span" sx={{ fontSize: value.length > 1 ? "40cqw" : "50cqw", fontWeight: 400, lineHeight: 1 }}>
+          <Box component="span" sx={{ fontSize: value.length > 1 ? "40cqw" : "50cqw", fontWeight: 300, lineHeight: 1 }}>
             {value}
           </Box>
         )}
         {isCoffee ? (
           <Box
             component="span"
-            sx={{ position: "absolute", bottom: "7cqw", fontSize: "11cqw", fontWeight: 500, letterSpacing: "0.04em" }}
+            sx={{
+              position: "absolute",
+              bottom: "7cqw",
+              fontSize: "10cqw",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+            }}
           >
             {label}
           </Box>
         ) : (
           <Icon
             aria-label={label}
-            sx={{ position: "absolute", bottom: "5cqw", right: "6cqw", fontSize: "24cqw", color: iconColor }}
+            sx={{ position: "absolute", bottom: "5cqw", right: "6cqw", fontSize: "24cqw", color: "var(--w2-acento)" }}
           />
         )}
       </Box>
@@ -79,10 +89,11 @@ export function CardBack() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "rgba(255,255,255,0.9)",
-          border: "1.5cqw solid rgba(255,255,255,0.85)",
+          // Sobre o preenchimento no acento, o detalhe vai no navy, como no CTA da marca.
+          color: "var(--w2-texto-inverso)",
+          border: "1.5cqw solid color-mix(in srgb, var(--w2-texto-inverso) 70%, transparent)",
           backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 4cqw, transparent 4cqw 8cqw)",
+            "repeating-linear-gradient(45deg, color-mix(in srgb, var(--w2-texto-inverso) 14%, transparent) 0 4cqw, transparent 4cqw 8cqw)",
         }}
       >
         <StyleIcon sx={{ fontSize: "40cqw" }} />
@@ -111,21 +122,19 @@ export function SelectableCard({ value, selected, disabled, onSelect }: Selectab
         disabled={disabled}
         aria-pressed={selected}
         aria-label={title}
-        sx={(theme) => ({
+        sx={{
           display: "block",
           width: "100%",
           borderRadius: "10%/7%",
-          boxShadow: selected ? theme.shadows[12] : theme.shadows[2],
+          // No tema escuro da marca não há sombra: a seleção é deslocamento mais contorno no acento.
           transform: selected ? "translateY(-14px) scale(1.04)" : "none",
-          outline: selected ? `3px solid ${(theme.vars ?? theme).palette.secondary.main}` : "none",
-          outlineOffset: 3,
-          transition: theme.transitions.create(["transform", "box-shadow"], {
-            duration: theme.transitions.duration.short,
-          }),
-          "&:hover": { transform: selected ? undefined : "translateY(-6px)", boxShadow: theme.shadows[8] },
-          "&.Mui-disabled": { opacity: selected ? 1 : 0.45, filter: selected ? "none" : "grayscale(0.6)" },
-          "&.Mui-focusVisible": { outline: `3px solid ${(theme.vars ?? theme).palette.secondary.main}` },
-        })}
+          outline: selected ? "var(--w2-borda-2) solid var(--w2-acento)" : "none",
+          outlineOffset: 4,
+          transition: "transform var(--w2-mov-2) var(--w2-mov-curva), opacity var(--w2-mov-2) var(--w2-mov-curva)",
+          "&:hover": { transform: selected ? undefined : "translateY(-6px)" },
+          "&.Mui-disabled": { opacity: selected ? 1 : 0.4 },
+          "&.Mui-focusVisible": { outline: "var(--w2-foco-largura) solid var(--w2-foco)" },
+        }}
       >
         <CardFace value={value} />
       </ButtonBase>

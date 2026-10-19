@@ -1,0 +1,46 @@
+/* Way2 Technology, espaço, raio, sombra, borda, movimento, grade e quebras. Tudo aqui é proposta, exceto a borda de 1px do cartão, que vem da regra 3 do guia. */
+:root {
+  /* Espaço, base 4px, nome igual ao multiplicador. proposta */
+  --w2-e-1: 4px; /* @kind spacing */
+  --w2-e-2: 8px; /* @kind spacing */
+  --w2-e-3: 12px; /* @kind spacing */
+  --w2-e-4: 16px; /* @kind spacing */
+  --w2-e-6: 24px; /* @kind spacing */
+  --w2-e-8: 32px; /* @kind spacing */
+  --w2-e-12: 48px; /* @kind spacing */
+  --w2-e-16: 64px; /* @kind spacing */
+  --w2-e-24: 96px; /* @kind spacing */
+  /* Raio, discreto para não brigar com o símbolo geométrico da marca. proposta */
+  --w2-raio-0: 0; /* @kind other */
+  --w2-raio-1: 4px; /* @kind other */
+  --w2-raio-2: 8px; /* @kind other */ /* padrão de cartão e botão */
+  --w2-raio-3: 16px; /* @kind other */
+  --w2-raio-pill: 999px; /* @kind other */ /* tag e badge */
+  /* Sombra do guia v1.3, tinge com #0A1730 e não com preto. No tema escuro as duas viram none */
+  --w2-sombra-1: 0 1px 2px rgba(10, 23, 48, 0.08); /* @kind other */
+  --w2-sombra-2: 0 1px 2px rgba(10, 23, 48, 0.08), 0 4px 12px rgba(10, 23, 48, 0.10); /* @kind other */ /* valor do guia v1.3 */
+  /* Borda e foco */
+  --w2-borda-1: 1px; /* @kind spacing */ /* cartão sobre superfície escura, regra 3 */
+  --w2-borda-2: 2px; /* @kind spacing */ /* proposta */
+  --w2-foco-largura: 2px; /* @kind spacing */ /* proposta, estado precisa de forma, regra 4 */
+  --w2-foco-deslocamento: 2px; /* @kind spacing */ /* proposta */
+  /* Movimento. Respeitar prefers-reduced-motion. proposta */
+  --w2-mov-1: 120ms; /* @kind other */
+  --w2-mov-2: 200ms; /* @kind other */
+  --w2-mov-3: 320ms; /* @kind other */
+  --w2-mov-curva: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  /* Grade, 12 colunas porque divide por 2, 3, 4 e 6. proposta */
+  --w2-grade-colunas: 12; /* @kind other */
+  --w2-grade-max: 1200px; /* @kind spacing */
+  --w2-grade-goteira: 24px; /* @kind spacing */
+  --w2-grade-margem: 24px; /* @kind spacing */
+  --w2-grade-margem-desktop: 48px; /* @kind spacing */
+  /* Quebras. Valor de consulta, não funciona dentro de @media. proposta */
+  --w2-q-xs: 480px; /* @kind spacing */
+  --w2-q-sm: 768px; /* @kind spacing */
+  --w2-q-md: 1024px; /* @kind spacing */
+  --w2-q-lg: 1280px; /* @kind spacing */
+  --w2-q-xl: 1536px; /* @kind spacing */
+  /* Logo, respiro igual a 0,25 da altura do lockup nos quatro lados. proposta */
+  --w2-logo-respiro: 0.25; /* @kind other */
+}

@@ -1,0 +1,39 @@
+@import url("./way2/tokens.css");
+
+/* Profundidade de fundo da marca (references/web.md): base em degradê navy e
+   dois brilhos atrás do conteúdo. Os cartões são opacos, então o brilho só
+   aparece nas margens da página. */
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background: var(--w2-grad-base-profundidade);
+  background-color: var(--w2-superficie);
+  color: var(--w2-texto);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--w2-grad-brilho-acento), var(--w2-grad-brilho-elev);
+}
+
+/* A face da carta é uma superfície clara dentro do tema escuro: o trecho volta
+   para os tons de superfície clara da família, como manda a regra do tema. */
+.w2-face-clara {
+  --w2-superficie: var(--w2-sup-claro-elevado);
+  --w2-texto: var(--w2-cinza-900);
+  --w2-acento: var(--w2-fam-texto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

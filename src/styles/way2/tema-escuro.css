@@ -1,0 +1,33 @@
+/* Way2 Technology, tema escuro, guia v1.4. Re-aponta só a camada 2, nenhuma primitiva muda. Elevação é borda, não sombra: cartão #203460 sobre #0A1730 leva 1px em #3A5285, regra 3. Acento é o tom escuro da família, na azul #00CBFE, e o #0E6DB1 nunca é texto nem elemento fino aqui, P1. Dentro do cartão #203460 o texto é branco e o tom escuro fica em borda, ícone e barra, regra 9 e P22. */
+[data-theme="dark"] {
+  --w2-superficie: var(--w2-sup-escuro-pagina); /* @kind color */
+  --w2-superficie-alt: var(--w2-sup-escuro-pagina); /* @kind color */ /* faixa alternada não existe no escuro */
+  --w2-superficie-elevada: var(--w2-sup-escuro-elev-2); /* @kind color */
+  --w2-superficie-elevada-2: var(--w2-sup-escuro-elev-1); /* @kind color */
+  --w2-texto: var(--w2-branco); /* @kind color */
+  --w2-texto-secundario: var(--w2-cinza-300); /* @kind color */
+  --w2-texto-inverso: var(--w2-sup-escuro-pagina); /* @kind color */
+  --w2-borda: var(--w2-borda-escura); /* @kind color */ /* divisor sobre #0A1730, guia v1.4 */
+  --w2-borda-elevada: var(--w2-borda-escura); /* @kind color */ /* contorno de 1px do cartão, guia v1.4 */
+  --w2-acento: var(--w2-fam-escuro); /* @kind color */
+  --w2-acento-area: var(--w2-fam-base); /* @kind color */
+  --w2-acento-area-elevada: var(--w2-fam-escuro); /* @kind color */ /* área e série sobre cartão, sem texto em cima */
+  --w2-acento-fundo: transparent; /* @kind color */ /* bloco chapado escuro não existe aqui, P7 */
+  --w2-acento-tag: var(--w2-fam-tag-fundo, transparent); /* @kind color */ /* v1.4: badge e tag no escuro são transparentes com borda no tom escuro nas duas elevações. Os quatro segmentos não declaram --w2-fam-tag-fundo, então caem em transparent; só a paleta opt-in de produto preenche com a cor do produto */
+  --w2-acento-tag-texto: var(--w2-fam-tag-texto, var(--w2-fam-escuro)); /* @kind color */ /* texto da tag sobre a página #0A1730, o tom escuro da família. Sobre o cartão #203460 use --w2-acento-tag-texto-elevado, que é branco, P22 */
+  --w2-acento-tag-suave: var(--w2-fam-tag-suave-escuro, transparent); /* @kind color */ /* tag suave no escuro só existe sob data-paleta="produto" */
+  --w2-acento-tag-suave-texto: var(--w2-fam-escuro); /* @kind color */ /* sobre a página o texto é a cor da paleta ativa. Sobre o cartão #203460 vale o token elevado */
+  --w2-acento-texto-elevado: var(--w2-branco); /* @kind color */ /* acento como texto dentro do cartão #203460 é branco, regra 9 e P22 */
+  --w2-acento-tag-texto-elevado: var(--w2-branco); /* @kind color */ /* tag transparente sobre #203460, texto branco */
+  --w2-acento-tag-borda: var(--w2-fam-escuro); /* @kind color */
+  --w2-foco: var(--w2-fam-escuro); /* @kind color */
+  --w2-segmento-geracao: var(--w2-azul-escuro); /* @kind color */
+  --w2-segmento-distribuicao: var(--w2-verm-escuro); /* @kind color */
+  --w2-segmento-consumo: var(--w2-amar-escuro); /* @kind color */
+  --w2-segmento-pdi: var(--w2-verd-escuro); /* @kind color */
+  --w2-sombra-1: none; /* @kind other */
+  --w2-sombra-2: none; /* @kind other */
+  --w2-sombra-cartao: none; /* @kind other */ /* no escuro a elevação é borda, nunca sombra */
+  --w2-grad-fundo: var(--w2-grad-navy); /* @kind color */ /* no escuro todos os gradientes valem, o de fundo padrão é o navy */
+}
+/* Ativação explícita por data-theme="dark", no raiz ou em um trecho. O tema não segue prefers-color-scheme, documento nasce claro e peça social nasce escura por declaração, nunca pela preferência do sistema do leitor. */

@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Roboto } from "next/font/google";
+import { Nunito_Sans } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { Providers } from "@/components/Providers";
+import "@/styles/globals.css";
 
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
+// Fonte da marca Way2: títulos em 700 e corpo em 300.
+const nunitoSans = Nunito_Sans({
+  weight: ["300", "700"],
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-roboto",
+  variable: "--font-nunito-sans",
 });
 
 export const metadata: Metadata = {
@@ -18,11 +20,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#0A1730", // --w2-sup-escuro-pagina (a meta tag não aceita var CSS)
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={roboto.variable}>
+    // O tema da marca é declarado, nunca segue prefers-color-scheme.
+    <html lang="pt-BR" data-theme="dark" data-segmento="pdi" className={nunitoSans.variable}>
       <body>
         <AppRouterCacheProvider>
           <Providers>{children}</Providers>

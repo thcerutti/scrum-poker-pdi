@@ -1,0 +1,73 @@
+/* Way2 Technology, família de acento por segmento. Só ponteiros --w2-fam-* mudam aqui, e o tema decide qual tom deles vira acento. */
+/* Guia v1.4: no tema escuro badge e tag são transparentes com borda no tom escuro, então os segmentos não declaram --w2-fam-tag-fundo nem --w2-fam-tag-texto. O claro resolve pelos fallbacks de cores.css, tom tag no fundo e tom fundo no texto. */
+/* Uma família de acento por peça, regra 1. O azul institucional acompanha qualquer uma e segue dominando no nível da marca. Série de gráfico é a única exceção. */
+/* O segmento vence sempre. data-marca identifica o produto para logo e assinatura e não troca o acento: PowerHub é consumo, PIM é geração ou distribuição, Integraflow é distribuição ou consumo, e dois públicos vão de institucional. */
+/* Institucional é o padrão de cores.css, que já aponta os --w2-fam-* para a família azul no :root.
+   O bloco existe mesmo assim para que data-segmento="institucional" reponha a família azul dentro de
+   um bloco que já declarou outro segmento. Sem ele o aninhamento herda o acento errado em silêncio.
+   Nenhuma cor nova, os mesmos ponteiros do :root. */
+[data-segmento="institucional"] {
+  --w2-fam-texto: var(--w2-azul-texto); /* @kind color */
+  --w2-fam-base: var(--w2-azul-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-azul-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-azul-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-azul-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-branco); /* @kind color */
+}
+[data-segmento="geracao"] {
+  --w2-fam-texto: var(--w2-azul-texto); /* @kind color */
+  --w2-fam-base: var(--w2-azul-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-azul-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-azul-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-azul-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-branco); /* @kind color */
+}
+[data-segmento="distribuicao"] {
+  --w2-fam-texto: var(--w2-verm-texto); /* @kind color */
+  --w2-fam-base: var(--w2-verm-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-verm-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-verm-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-verm-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-branco); /* @kind color */
+}
+[data-segmento="consumo"] {
+  --w2-fam-texto: var(--w2-amar-texto); /* @kind color */
+  --w2-fam-base: var(--w2-amar-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-amar-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-amar-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-amar-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-amar-fundo); /* @kind color */ /* branco sobre #D9B11C é proibido, P8 */
+}
+[data-segmento="pdi"] {
+  --w2-fam-texto: var(--w2-verd-texto); /* @kind color */
+  --w2-fam-base: var(--w2-verd-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-verd-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-verd-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-verd-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-branco); /* @kind color */
+}
+/* Paleta de produto: uso futuro; só com data-paleta="produto" explícito a pedido do Marketing. Na comunicação, a cor é a do segmento. As primitivas --w2-ph-* e --w2-if-* seguem definidas em cores.css porque servem às logos, e os blocos abaixo não valem sem o opt-in. */
+[data-marca="powerhub"][data-paleta="produto"] {
+  --w2-fam-texto: var(--w2-azul-texto); /* @kind color */ /* #FDA800 não atinge contraste de texto no claro */
+  --w2-fam-base: var(--w2-ph-laranja); /* @kind color */
+  --w2-fam-escuro: var(--w2-ph-laranja); /* @kind color */ /* no escuro o laranja é legível */
+  --w2-fam-fundo: var(--w2-azul-fundo); /* @kind color */ /* PowerHub não tem tom fundo próprio */
+  --w2-fam-tag: var(--w2-azul-tag); /* @kind color */ /* degrau claro do sequencial de gráfico */
+  --w2-fam-tag-fundo: var(--w2-ph-laranja); /* @kind color */ /* a tag leva a cor do produto nas duas superfícies */
+  --w2-fam-tag-texto: var(--w2-cinza-900); /* @kind color */ /* #1E1E1E sobre #FDA800 */
+  --w2-fam-tag-suave: rgba(253, 168, 0, 0.14); /* @kind color */ /* tag de baixo peso em superfície clara */
+  --w2-fam-tag-suave-escuro: rgba(253, 168, 0, 0.14); /* @kind color */ /* a mesma tag sobre #0A1730 e #203460, a 20% o laranja como texto ficava em 4,45 sobre o cartão #203460 */
+  --w2-fam-sobre-base: var(--w2-cinza-900); /* @kind color */ /* texto escuro sobre o laranja */
+}
+[data-marca="integraflow"][data-paleta="produto"] {
+  --w2-fam-texto: var(--w2-if-indigo); /* @kind color */
+  --w2-fam-base: var(--w2-if-turquesa); /* @kind color */
+  --w2-fam-escuro: var(--w2-if-turquesa); /* @kind color */
+  --w2-fam-fundo: var(--w2-if-indigo); /* @kind color */
+  --w2-fam-tag: var(--w2-azul-tag); /* @kind color */ /* degrau claro do sequencial de gráfico */
+  --w2-fam-tag-fundo: var(--w2-if-turquesa); /* @kind color */ /* a tag leva a cor do produto nas duas superfícies */
+  --w2-fam-tag-texto: var(--w2-if-indigo); /* @kind color */ /* #1C1564 sobre #00DCC6 */
+  --w2-fam-tag-suave: rgba(0, 220, 198, 0.14); /* @kind color */ /* tag de baixo peso em superfície clara */
+  --w2-fam-tag-suave-escuro: rgba(0, 220, 198, 0.20); /* @kind color */ /* a mesma tag sobre #0A1730 e #203460 */
+  --w2-fam-sobre-base: var(--w2-if-indigo); /* @kind color */ /* branco sobre turquesa não passa */
+}

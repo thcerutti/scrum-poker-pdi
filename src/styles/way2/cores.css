@@ -1,0 +1,119 @@
+/* Way2 Technology, tokens de cor. Prefixo global --w2-. Camada 1, primitivas: valor cru do guia v1.4, nunca usar direto em peça. Camada 2, semânticas: papel na interface, é o que peça e componente usam. */
+/* Tema escuro em tema-escuro.css. Família de acento por segmento em produtos.css. */
+:root {
+  /* Camada 1, superfícies [guia] */
+  --w2-sup-claro-pagina: #F0F7FC; /* @kind color */ /* página do contexto produto no tema claro */
+  --w2-sup-claro-elevado: #FFFFFF; /* @kind color */ /* página institucional e cartão do contexto produto */
+  --w2-sup-escuro-pagina: #0A1730; /* @kind color */
+  --w2-sup-escuro-elev-1: #10254A; /* @kind color */ /* elevação escura nível 1 */
+  --w2-sup-escuro-elev-2: #203460; /* @kind color */ /* nível 2, cartão sobre #0A1730, nunca fundo de seção */
+  --w2-borda-clara: #C9D9E8; /* @kind color */ /* borda de cartão e divisor em superfície clara, guia v1.4 */
+  --w2-borda-escura: #3A5285; /* @kind color */ /* borda de cartão sobre #0A1730, guia v1.4 */
+  /* Camada 1, família azul, segmento Geração e cor institucional [guia] */
+  --w2-azul-fundo: #00295C; /* @kind color */
+  --w2-azul-texto: #0E6DB1; /* @kind color */ /* cor principal, não sofre alteração */
+  --w2-azul-base: #0E6DB1; /* @kind color */
+  --w2-azul-escuro: #00CBFE; /* @kind color */ /* ciano oficial, só sobre superfície escura */
+  --w2-azul-tag: #DCEEF9; /* @kind color */
+  /* Camada 1, família vermelha, segmento Distribuição [guia] */
+  --w2-verm-fundo: #7A0C16; /* @kind color */
+  --w2-verm-texto: #C0121F; /* @kind color */ /* proibido em qualquer papel sobre superfície escura */
+  --w2-verm-base: #DA1C2B; /* @kind color */
+  --w2-verm-escuro: #FF2436; /* @kind color */ /* v1.4, era #FF8A8F. Título, rótulo, badge e elemento gráfico; texto corrido no escuro é branco, regra 10 e P23 */
+  --w2-verm-tag: #FBE2E4; /* @kind color */
+  /* Camada 1, família amarela, segmento Consumo [guia] */
+  --w2-amar-fundo: #4F3A02; /* @kind color */ /* também é o texto sobre bloco amarelo */
+  --w2-amar-texto: #8A6800; /* @kind color */
+  --w2-amar-base: #D9B11C; /* @kind color */ /* texto branco sobre ele é proibido sempre */
+  --w2-amar-escuro: #FFC61A; /* @kind color */
+  --w2-amar-tag: #FBF3D3; /* @kind color */
+  /* Camada 1, família verde, segmento PDI [guia] */
+  --w2-verd-fundo: #033012; /* @kind color */
+  --w2-verd-texto: #007F32; /* @kind color */
+  --w2-verd-base: #007F32; /* @kind color */
+  --w2-verd-escuro: #00B856; /* @kind color */ /* v1.4, era #3DF584 */
+  --w2-verd-tag: #DCF7E4; /* @kind color */
+  --w2-verd-legado: #2FAA52; /* @kind color */ /* só reconcilia peça antiga, fora do fluxo de acento */
+  /* Camada 1, neutros [manual 2023] */
+  --w2-cinza-900: #1E1E1E; /* @kind color */
+  --w2-cinza-600: #5E5E5E; /* @kind color */
+  --w2-cinza-300: #D1D1D1; /* @kind color */
+  --w2-cinza-200: #E8E8E8; /* @kind color */
+  --w2-branco: #FFFFFF; /* @kind color */
+  --w2-preto: #000000; /* @kind color */ /* exclusivo do logo tom negativa, nunca é cor de texto */
+  /* Camada 1, produtos [decisão]. Servem às logos e à paleta opt-in data-paleta="produto". Na comunicação o acento é o do segmento */
+  --w2-ph-laranja: #FDA800; /* @kind color */ /* nunca texto em superfície clara */
+  --w2-ph-cinza: #757C80; /* @kind color */
+  --w2-ph-assinatura: #BABABA; /* @kind color */
+  --w2-if-turquesa: #00DCC6; /* @kind color */ /* nunca texto em superfície clara */
+  --w2-if-indigo: #1C1564; /* @kind color */
+  /* Camada 2b, ponteiros da família ativa. Padrão azul, re-apontados em produtos.css */
+  --w2-fam-texto: var(--w2-azul-texto); /* @kind color */
+  --w2-fam-base: var(--w2-azul-base); /* @kind color */
+  --w2-fam-escuro: var(--w2-azul-escuro); /* @kind color */
+  --w2-fam-fundo: var(--w2-azul-fundo); /* @kind color */
+  --w2-fam-tag: var(--w2-azul-tag); /* @kind color */
+  --w2-fam-sobre-base: var(--w2-branco); /* @kind color */ /* texto sobre bloco no tom base */
+  /* Camada 2, superfícies do tema claro */
+  --w2-superficie: var(--w2-sup-claro-elevado); /* @kind color */
+  --w2-superficie-alt: var(--w2-sup-claro-pagina); /* @kind color */ /* faixa alternada de seção */
+  --w2-superficie-elevada: var(--w2-sup-claro-pagina); /* @kind color */ /* cartão institucional e impresso: cor mais borda de 1px, sem sombra */
+  --w2-superficie-elevada-2: var(--w2-sup-claro-pagina); /* @kind color */
+  /* Camada 2, texto e borda */
+  --w2-texto: var(--w2-cinza-900); /* @kind color */
+  --w2-texto-secundario: var(--w2-cinza-600); /* @kind color */
+  --w2-texto-inverso: var(--w2-branco); /* @kind color */
+  --w2-borda: var(--w2-borda-clara); /* @kind color */ /* divisor e borda de campo, guia v1.4 */
+  --w2-borda-elevada: var(--w2-borda-clara); /* @kind color */ /* contorno de 1px do cartão */
+  --w2-sombra-cartao: none; /* @kind other */ /* institucional e impresso não levam sombra */
+  /* Camada 2, acento. A superfície define o tom, regra 7 */
+  --w2-acento: var(--w2-fam-texto); /* @kind color */ /* texto, ícone, link, borda, barra, divisor */
+  --w2-acento-area: var(--w2-fam-base); /* @kind color */ /* área, preenchimento, faixa, série */
+  --w2-acento-area-elevada: var(--w2-fam-base); /* @kind color */ /* área sobre cartão */
+  --w2-acento-fundo: var(--w2-fam-fundo); /* @kind color */ /* bloco chapado escuro */
+  --w2-acento-texto: var(--w2-fam-sobre-base); /* @kind color */ /* texto sobre bloco base ou fundo */
+  --w2-acento-texto-elevado: var(--w2-fam-texto); /* @kind color */ /* acento no papel de texto dentro de cartão. No claro segue o tom texto */
+  --w2-acento-tag: var(--w2-fam-tag-fundo, var(--w2-fam-tag)); /* @kind color */ /* preenchimento da tag, a paleta opt-in de produto re-aponta em produtos.css */
+  --w2-acento-tag-texto: var(--w2-fam-tag-texto, var(--w2-fam-fundo)); /* @kind color */
+  --w2-acento-tag-suave: var(--w2-fam-tag-suave, var(--w2-fam-tag)); /* @kind color */ /* tag de baixo peso, no segmento é o próprio tom tag */
+  --w2-acento-tag-suave-texto: var(--w2-fam-tag-texto, var(--w2-fam-fundo)); /* @kind color */ /* no claro é o mesmo texto da tag cheia */
+  --w2-acento-tag-texto-elevado: var(--w2-fam-tag-texto, var(--w2-fam-fundo)); /* @kind color */ /* texto da tag dentro de cartão, no claro é o mesmo da tag na página */
+  --w2-acento-tag-borda: transparent; /* @kind color */
+  --w2-foco: var(--w2-fam-texto); /* @kind color */ /* cor do anel de foco */
+  /* Camada 2, os quatro segmentos juntos, legenda e comparativo */
+  --w2-segmento-geracao: var(--w2-azul-base); /* @kind color */
+  --w2-segmento-distribuicao: var(--w2-verm-base); /* @kind color */
+  --w2-segmento-consumo: var(--w2-amar-base); /* @kind color */
+  --w2-segmento-pdi: var(--w2-verd-base); /* @kind color */
+  /* Gradientes, só em superfície escura ou como véu sobre foto, um por peça, nunca em logo nem em texto. Recomendação aplicada, ajustável */
+  --w2-grad-navy: linear-gradient(135deg, #0A1730 0%, #203460 100%); /* @kind color */ /* fundo de seção escura e cartão grande, branco em qualquer tamanho */
+  --w2-grad-azul-navy: linear-gradient(135deg, #0E6DB1 0%, #0A1730 100%); /* @kind color */ /* abertura de slide, capa de carrossel e faixa de rodapé, branco em qualquer tamanho */
+  --w2-grad-ciano: linear-gradient(135deg, #00CBFE 0%, #0E6DB1 100%); /* @kind color */ /* decorativo, barra, filete e anel de ícone, sem texto */
+  --w2-grad-veu-foto: linear-gradient(180deg, rgba(10, 23, 48, 0.85) 0%, rgba(10, 23, 48, 0.60) 100%); /* @kind color */ /* véu sobre foto, o texto fica na faixa de 0,60 para cima */
+  --w2-grad-veu-decorativo: linear-gradient(180deg, rgba(10, 23, 48, 0.85) 0%, rgba(10, 23, 48, 0.35) 100%); /* @kind color */ /* esmaecimento de borda, sem texto na metade fraca */
+  --w2-grad-fundo: none; /* @kind color */ /* no tema claro não há gradiente de fundo, só os dois véus. O tema escuro aponta para --w2-grad-navy */
+  /* Profundidade de fundo, proposta 14/09/2026, estendida a toda peça digital em 18/09/2026. Fundo de peça digital nunca é chapado, escuro ou claro, e a regra vale em peça social, slide, e-book, infográfico, banner, capa e HTML de tela, ver references/web.md e references/cores.md. Este bloco é o da superfície escura, o da dobra clara vem logo abaixo. Nunca em e-mail, que proíbe gradiente e rgba, ver references/email.md. Nenhuma cor nova: o brilho é acento e elevação em baixa opacidade, por color-mix */
+  --w2-brilho-op: 14%; /* @kind other */ /* faixa de trabalho 8% a 18%, abaixo o brilho some e acima o texto perde contraste */
+  --w2-brilho-acento: color-mix(in srgb, var(--w2-acento) var(--w2-brilho-op), transparent); /* @kind color */ /* lê o acento do trecho, então segue a família do segmento */
+  --w2-brilho-elev: color-mix(in srgb, var(--w2-sup-escuro-elev-2) 60%, transparent); /* @kind color */
+  --w2-grad-brilho-acento: radial-gradient(58% 52% at 78% 12%, var(--w2-brilho-acento) 0%, transparent 68%); /* @kind color */ /* um ponto por dobra, no canto oposto ao texto */
+  --w2-grad-brilho-elev: radial-gradient(70% 58% at 10% 92%, var(--w2-brilho-elev) 0%, transparent 72%); /* @kind color */ /* segundo e último ponto da dobra, ancora a base */
+  --w2-grad-base-profundidade: linear-gradient(180deg, #10254A 0%, #0A1730 55%, #0A1730 100%); /* @kind color */ /* base da dobra escura, o navy continua dominando a página */
+  /* Profundidade da dobra clara digital, decisão do dono da marca de 18/09/2026. A dobra ou página clara de alternância também não é chapada. Mesma faixa de opacidade do escuro, mesma proibição de texto sobre o pico. Nenhuma cor nova: nasce de --w2-acento e das superfícies claras já existentes, por color-mix. Fora de escopo em e-mail, A4 timbrado e impresso, P26 */
+  --w2-brilho-claro-op: 14%; /* @kind other */ /* faixa de trabalho 8% a 18%, a mesma do escuro */
+  --w2-brilho-claro-acento: color-mix(in srgb, var(--w2-acento) var(--w2-brilho-claro-op), transparent); /* @kind color */ /* lê o acento do trecho, então segue a família do segmento */
+  --w2-brilho-claro-sup: color-mix(in srgb, var(--w2-sup-claro-pagina) 60%, transparent); /* @kind color */
+  --w2-grad-brilho-claro-acento: radial-gradient(58% 52% at 78% 12%, var(--w2-brilho-claro-acento) 0%, transparent 68%); /* @kind color */ /* um ponto por dobra, no canto oposto ao texto */
+  --w2-grad-brilho-claro-sup: radial-gradient(70% 58% at 10% 92%, var(--w2-brilho-claro-sup) 0%, transparent 72%); /* @kind color */ /* segundo e último ponto da dobra, ancora a base */
+  --w2-grad-base-profundidade-clara: linear-gradient(180deg, var(--w2-sup-claro-pagina) 0%, var(--w2-sup-claro-elevado) 55%, var(--w2-sup-claro-elevado) 100%); /* @kind color */ /* base da dobra clara, o branco continua dominando */
+  --w2-ruido-op: 0.035; /* @kind other */ /* opcional, só para quebrar banding em tela grande, vale no escuro e no claro */
+  --w2-grad-ruido: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='w2r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23w2r)'/%3E%3C/svg%3E"); /* @kind other */
+}
+/* Contexto de elevação clara, guia v1.4. Sem atributo é institucional e impresso: página #FFFFFF, cartão #F0F7FC, sem sombra. */
+[data-contexto="produto"] {
+  --w2-superficie: var(--w2-sup-claro-pagina); /* @kind color */ /* página de interface no tema claro */
+  --w2-superficie-alt: var(--w2-sup-claro-elevado); /* @kind color */
+  --w2-superficie-elevada: var(--w2-sup-claro-elevado); /* @kind color */ /* cartão #FFFFFF com sombra e borda */
+  --w2-superficie-elevada-2: var(--w2-sup-claro-elevado); /* @kind color */ /* um nível de elevação por peça, regra 8 */
+  --w2-sombra-cartao: var(--w2-sombra-1); /* @kind other */ /* nível 1 no cartão, o nível 2 fica para camada transitória */
+}

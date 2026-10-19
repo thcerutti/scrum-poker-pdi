@@ -1,0 +1,8 @@
+/* Tokens oficiais da marca Way2, copiados sem alteração da skill way2-marca.
+   Mesma ordem do tokens.css original. Ficam de fora tipografia.css, cujo
+   @font-face aponta para TTFs locais (a Nunito Sans vem do next/font em
+   layout.tsx), e graficos.css, que o app não usa. */
+@import url("cores.css");
+@import url("tema-escuro.css");
+@import url("espaco.css");
+@import url("produtos.css");

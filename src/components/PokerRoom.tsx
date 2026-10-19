@@ -38,10 +38,11 @@ const POLL_INTERVAL_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const API = "/api/room";
 
+// Halo no acento do segmento chamando para revelar; não é sombra de elevação.
 const pulse = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.55); }
-  70% { box-shadow: 0 0 0 12px rgba(46, 125, 50, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--w2-acento) 55%, transparent); }
+  70% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--w2-acento) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--w2-acento) 0%, transparent); }
 `;
 
 class ConflictError extends Error {
@@ -139,7 +140,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
   if (!data) {
     return (
       <Box sx={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
-        {error ? <Typography color="error">Não foi possível conectar à sala.</Typography> : <CircularProgress />}
+        {error ? <Typography>Não foi possível conectar à sala.</Typography> : <CircularProgress />}
       </Box>
     );
   }
@@ -184,11 +185,11 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
     onLeave();
   };
 
-  const isOutlier = (v: CardValue | null) =>
-    analysis?.level === "divergent" && v !== null && (v === analysis.min || v === analysis.max);
+  const extremeOf = (v: CardValue | null) =>
+    analysis?.level !== "divergent" ? null : v === analysis.min ? "min" : v === analysis.max ? "max" : null;
 
   return (
-    <Box sx={{ minHeight: "100dvh", bgcolor: "background.default" }}>
+    <Box sx={{ minHeight: "100dvh" }}>
       <AppBar position="sticky" elevation={2}>
         <Toolbar>
           <StyleIcon sx={{ mr: 1.5 }} />
@@ -198,7 +199,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
           <Chip
             avatar={<Avatar>{user.name[0]?.toUpperCase()}</Avatar>}
             label={user.name}
-            sx={{ bgcolor: "rgba(255,255,255,0.16)", color: "inherit", mr: 1, maxWidth: { xs: 140, sm: 260 } }}
+            sx={{ mr: 1, maxWidth: { xs: 140, sm: 260 } }}
           />
           <Tooltip title="Sair / trocar nome">
             <IconButton color="inherit" onClick={leave} aria-label="Sair">
@@ -223,7 +224,6 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
             </Stack>
             <LinearProgress
               variant="determinate"
-              color={allVoted ? "success" : "primary"}
               value={participants.length ? (votedCount / participants.length) * 100 : 0}
               sx={{ height: 6, borderRadius: 3, mb: 3 }}
             />
@@ -238,7 +238,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
               }}
             >
               {participants.map((p) => (
-                <Seat key={p.id} participant={p} revealed={revealed} isMe={p.id === user.id} outlier={isOutlier(p.vote)} />
+                <Seat key={p.id} participant={p} revealed={revealed} isMe={p.id === user.id} extreme={extremeOf(p.vote)} />
               ))}
             </Box>
 
@@ -246,7 +246,6 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
               <Button
                 variant="contained"
                 size="large"
-                color={allVoted ? "success" : "primary"}
                 startIcon={<VisibilityIcon />}
                 onClick={reveal}
                 disabled={revealed || votedCount === 0}
@@ -261,7 +260,6 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
               <Button
                 variant="outlined"
                 size="large"
-                color="inherit"
                 startIcon={<RestartAltIcon />}
                 onClick={() => setConfirmClear(true)}
               >
@@ -333,7 +331,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmClear(false)}>Cancelar</Button>
-          <Button onClick={clear} variant="contained" color="error" autoFocus>
+          <Button onClick={clear} variant="contained" autoFocus>
             Limpar
           </Button>
         </DialogActions>

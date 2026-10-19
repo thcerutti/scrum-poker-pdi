@@ -8,32 +8,39 @@ interface SeatProps {
   participant: Participant;
   revealed: boolean;
   isMe: boolean;
-  /** Votou no extremo (menor ou maior) de uma rodada com divergência. */
-  outlier: boolean;
+  /** Votou no extremo de uma rodada com divergência. */
+  extreme: "min" | "max" | null;
 }
 
-export function Seat({ participant, revealed, isMe, outlier }: SeatProps) {
+/** Tag da marca sobre o cartão: contorno no acento, fundo transparente, texto branco. */
+const tagSx = {
+  px: 1,
+  py: 0.25,
+  borderRadius: "var(--w2-raio-pill)",
+  border: "var(--w2-borda-1) solid var(--w2-acento-tag-borda)",
+  color: "var(--w2-acento-tag-texto-elevado)",
+  fontSize: "0.75rem",
+  fontWeight: 700,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+} as const;
+
+export function Seat({ participant, revealed, isMe, extreme }: SeatProps) {
   const { name, voted, vote } = participant;
   const faceUp = revealed && vote !== null;
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, minWidth: 0 }}>
-      <Box
-        sx={(theme) => ({
-          width: "100%",
-          maxWidth: 88,
-          borderRadius: "10%/7%",
-          outline: outlier ? `3px solid ${(theme.vars ?? theme).palette.warning.main}` : "none",
-          outlineOffset: 3,
-        })}
-      >
+      <Box sx={{ width: "100%", maxWidth: 88 }}>
         {voted || faceUp ? (
           <Box sx={{ perspective: "600px" }}>
             <Box
               sx={{
                 display: "grid",
                 transformStyle: "preserve-3d",
-                transition: "transform 600ms cubic-bezier(.2,.7,.3,1)",
+                transition: "transform var(--w2-mov-3) var(--w2-mov-curva)",
                 transform: faceUp ? "rotateY(0deg)" : "rotateY(180deg)",
                 "& > *": { gridArea: "1 / 1", backfaceVisibility: "hidden" },
               }}
@@ -49,16 +56,20 @@ export function Seat({ participant, revealed, isMe, outlier }: SeatProps) {
             sx={{
               aspectRatio: "5 / 7",
               borderRadius: "10%/7%",
-              border: "2px dashed",
-              borderColor: "divider",
+              border: "var(--w2-borda-2) dashed var(--w2-borda)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "text.disabled",
-              fontSize: 22,
+              textAlign: "center",
+              color: "text.secondary",
+              fontSize: revealed ? 12 : 22,
+              fontWeight: revealed ? 700 : 300,
+              textTransform: revealed ? "uppercase" : "none",
+              letterSpacing: revealed ? "0.14em" : 0,
+              px: 0.5,
             }}
           >
-            {revealed ? "—" : "?"}
+            {revealed ? "sem voto" : "?"}
           </Box>
         )}
       </Box>
@@ -66,14 +77,22 @@ export function Seat({ participant, revealed, isMe, outlier }: SeatProps) {
         variant="body2"
         noWrap
         title={name}
-        sx={{ maxWidth: "100%", fontWeight: isMe ? 700 : 400, color: voted ? "text.primary" : "text.secondary" }}
+        sx={{ maxWidth: "100%", fontWeight: isMe ? 700 : 300, color: voted ? "text.primary" : "text.secondary" }}
       >
         {name}
       </Typography>
       {isMe && (
-        <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 600, mt: -1 }}>
+        <Typography
+          variant="caption"
+          sx={{ fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", mt: -1 }}
+        >
           você
         </Typography>
+      )}
+      {extreme && (
+        <Box component="span" sx={tagSx} title={extreme === "min" ? "Menor voto da rodada" : "Maior voto da rodada"}>
+          {extreme === "min" ? "menor" : "maior"}
+        </Box>
       )}
     </Box>
   );
