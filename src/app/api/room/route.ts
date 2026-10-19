@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isCardValue, type CardValue } from "@/lib/deck";
 import { store } from "@/lib/store";
-import type { Participant, RoomState } from "@/lib/types";
+import type { Participant, RevealGif, RoomState } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,19 @@ const isPid = (pid: unknown): pid is string =>
 
 const isRound = (round: unknown): round is number =>
   typeof round === "number" && Number.isInteger(round) && round >= 0;
+
+const isDimension = (n: unknown): n is number =>
+  typeof n === "number" && Number.isInteger(n) && n > 0 && n <= 4000;
+
+/** Só aceita mídia servida pelo próprio KLIPY. */
+function parseGif(gif: unknown): RevealGif | null {
+  if (typeof gif !== "object" || gif === null) return null;
+  const { url, width, height, title } = gif as Record<string, unknown>;
+  if (typeof url !== "string" || url.length > 2000) return null;
+  if (!/^https:\/\/static\d*\.klipy\.com\//.test(url)) return null;
+  if (!isDimension(width) || !isDimension(height)) return null;
+  return { url, width, height, title: typeof title === "string" ? title.slice(0, 200) : "" };
+}
 
 async function readState(pid: string | null): Promise<RoomState> {
   const fields = await store.getAll();
@@ -45,7 +58,14 @@ async function readState(pid: string | null): Promise<RoomState> {
   if (stale.length > 0) await store.del(stale);
 
   participants.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  return { round, revealed, participants, myVote };
+
+  let gif: RevealGif | null = null;
+  if (revealed && fields.gif) {
+    const { round: gifRound, ...rest } = JSON.parse(fields.gif) as RevealGif & { round: number };
+    if (gifRound === round) gif = rest;
+  }
+
+  return { round, revealed, participants, myVote, gif };
 }
 
 export async function GET(request: NextRequest) {
@@ -98,6 +118,18 @@ export async function POST(request: NextRequest) {
       // rodada antiga não afetar a rodada nova.
       if (!isRound(body.round)) return badRequest("Rodada inválida.");
       await store.set({ revealed: String(body.round) });
+      break;
+    }
+
+    case "gif": {
+      const gif = parseGif(body.gif);
+      if (!isRound(body.round) || !gif) return badRequest("GIF inválido.");
+      // Fica o primeiro GIF da rodada; pedidos atrasados ou duplicados são ignorados.
+      const current = await readState(pid);
+      if (current.round !== body.round || !current.revealed || current.gif) {
+        return NextResponse.json(current);
+      }
+      await store.set({ gif: JSON.stringify({ ...gif, round: body.round }) });
       break;
     }
 

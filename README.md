@@ -27,6 +27,9 @@ quanto mais partes a entrega tem, mais pontos (Fibonacci).
   - **Divergência**: votos a duas ou mais cartas de distância. Quem votou no menor e
     no maior valor fica destacado na mesa.
   - A pausa (☕) não entra na média nem no cálculo de divergência.
+- Ao revelar, aparece um GIF do [KLIPY](https://klipy.com) que combina com o resultado
+  (comemoração no consenso, confusão na divergência). Quem clica em revelar busca o GIF
+  e ele é compartilhado com a sala, então todos veem o mesmo.
 - **Limpar votação** pede confirmação e inicia uma nova rodada para todos.
 - Quem fecha a aba sai da mesa; quem fica sem sinal por ~2,5 min é removido.
 
@@ -49,6 +52,16 @@ na Vercel (cada instância teria a sua própria memória).
 2. Em **Storage**, adicione um banco **Upstash Redis** (Marketplace) ao projeto. Ele
    cria `KV_REST_API_URL` e `KV_REST_API_TOKEN` automaticamente
    (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` também são aceitas).
-3. Faça o deploy (ou redeploy, se o banco foi adicionado depois).
+3. Para os GIFs, crie a variável `KLYPY_KEY` com a chave do KLIPY. Ela é embutida no
+   build, então mudar a chave exige um novo deploy.
+4. Faça o deploy (ou redeploy, se o banco ou a chave foram adicionados depois).
+
+### Sobre o KLIPY
+
+- Os termos exigem que a busca saia do navegador, por isso a chave fica visível no
+  JavaScript da página. O servidor só guarda a URL escolhida, nunca a mídia.
+- A chave em modo de teste é limitada a 100 requisições/hora (são até 2 por revelação).
+  Para liberar, peça acesso de produção no Partner Panel.
+- O filtro de conteúdo usado é o mais restrito (`content_filter=high`).
 
 Para rodar localmente contra o mesmo Redis: `vercel env pull .env.local`.

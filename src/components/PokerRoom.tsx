@@ -27,8 +27,10 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import StyleIcon from "@mui/icons-material/Style";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { analyzeVotes, CARD_VALUES, type CardValue } from "@/lib/deck";
+import { fetchRevealGif } from "@/lib/klipy";
 import type { RoomAction, RoomState } from "@/lib/types";
 import { SelectableCard } from "./PokerCard";
+import { GifCard } from "./GifCard";
 import { ResultPanel } from "./ResultPanel";
 import { Seat } from "./Seat";
 
@@ -109,7 +111,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
   const run = useCallback(
     async (payload: RoomAction, optimisticData?: (current: RoomState) => RoomState) => {
       try {
-        await mutate(postAction(payload), {
+        return await mutate(postAction(payload), {
           optimisticData: optimisticData && ((current) => (current ? optimisticData(current) : current!)),
           rollbackOnError: true,
           revalidate: false,
@@ -117,6 +119,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
       } catch (e) {
         if (e instanceof ConflictError) mutate(e.state, { revalidate: false });
         setToast(e instanceof Error ? e.message : "Algo deu errado.");
+        return undefined;
       }
     },
     [mutate],
@@ -151,7 +154,14 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
     }));
   };
 
-  const reveal = () => run({ action: "reveal", pid: user.id, round }, (current) => ({ ...current, revealed: true }));
+  const reveal = async () => {
+    const state = await run({ action: "reveal", pid: user.id, round }, (current) => ({ ...current, revealed: true }));
+    if (!state?.revealed || state.gif) return;
+    // Quem revela busca o GIF (o KLIPY exige a busca no navegador) e o compartilha com a sala.
+    const votes = state.participants.flatMap((p) => (p.vote ? [p.vote] : []));
+    const gif = await fetchRevealGif(analyzeVotes(votes).level, user.id).catch(() => null);
+    if (gif) run({ action: "gif", pid: user.id, round: state.round, gif });
+  };
 
   const clear = () => {
     setConfirmClear(false);
@@ -160,6 +170,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
       round: current.round + 1,
       revealed: false,
       myVote: null,
+      gif: null,
       participants: current.participants.map((p) => ({ ...p, voted: false, vote: null })),
     }));
   };
@@ -266,6 +277,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
                 Resultado
               </Typography>
               <ResultPanel analysis={analysis} />
+              {data.gif && <GifCard gif={data.gif} />}
             </Paper>
           )}
         </Box>
