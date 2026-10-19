@@ -5,7 +5,7 @@ import type { RevealGif } from "@/lib/types";
 
 export function GifCard({ gif }: { gif: RevealGif }) {
   return (
-    <Box component="figure" sx={{ m: 0, mt: 2.5 }}>
+    <Box component="figure" sx={{ m: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <Box
         component="img"
         // A URL é usada exatamente como o KLIPY devolveu, como pedem os termos de uso.
@@ -14,21 +14,10 @@ export function GifCard({ gif }: { gif: RevealGif }) {
         width={gif.width}
         height={gif.height}
         loading="eager"
-        sx={{
-          display: "block",
-          width: "100%",
-          height: "auto",
-          maxHeight: 280,
-          objectFit: "contain",
-          borderRadius: 2,
-          bgcolor: "action.hover",
-        }}
+        // Tamanho natural limitado pela coluna e pela altura, sem faixas de fundo.
+        sx={{ display: "block", width: "auto", height: "auto", maxWidth: "100%", maxHeight: 300, borderRadius: 2 }}
       />
-      <Typography
-        component="figcaption"
-        variant="caption"
-        sx={{ display: "block", textAlign: "right", color: "text.secondary", mt: 0.5 }}
-      >
+      <Typography component="figcaption" variant="caption" sx={{ color: "text.secondary", mt: 0.75 }}>
         Powered by KLIPY
       </Typography>
     </Box>

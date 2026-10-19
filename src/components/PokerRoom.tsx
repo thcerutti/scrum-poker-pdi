@@ -205,14 +205,9 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 3,
-            gridTemplateColumns: { xs: "1fr", md: revealed ? "minmax(0, 1fr) 380px" : "1fr" },
-            alignItems: "start",
-          }}
-        >
+        {/* Seções empilhadas na largura toda: lado a lado, a altura do resultado
+            (que cresce com o GIF) deixava um vão embaixo da mesa. */}
+        <Stack spacing={3}>
           <Paper sx={{ p: { xs: 2, sm: 3 } }}>
             <Stack direction="row" sx={{ alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
               <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
@@ -276,11 +271,20 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
               <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
                 Resultado
               </Typography>
-              <ResultPanel analysis={analysis} />
-              {data.gif && <GifCard gif={data.gif} />}
+              <Box
+                sx={{
+                  display: "grid",
+                  gap: 3,
+                  gridTemplateColumns: { xs: "1fr", md: data.gif ? "minmax(0, 1fr) minmax(0, 1fr)" : "1fr" },
+                  alignItems: "center",
+                }}
+              >
+                <ResultPanel analysis={analysis} />
+                {data.gif && <GifCard gif={data.gif} />}
+              </Box>
             </Paper>
           )}
-        </Box>
+        </Stack>
 
         <Paper sx={{ p: { xs: 2, sm: 3 }, mt: 3 }}>
           <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
