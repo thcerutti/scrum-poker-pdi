@@ -6,18 +6,26 @@ export interface Person {
   context: BrowserContext;
   page: Page;
   name: string;
+  code: string;
 }
 
 /** Cada contexto tem seu próprio localStorage: é uma pessoa diferente na mesa. */
-export async function enter(browser: Browser, name: string): Promise<Person> {
+export async function enter(browser: Browser, name: string, code?: string): Promise<Person> {
   const context = await browser.newContext();
   const page = await context.newPage();
-  await page.goto("/");
-  await page.getByLabel("Seu nome").fill(name);
-  await page.getByRole("button", { name: "Entrar na mesa" }).click();
-  await expect(seat(page, name)).toBeVisible();
-  return { context, page, name };
+  await enterOn(page, name, code);
+  return { context, page, name, code: roomCode(page) };
 }
+
+/** Sem código, cria uma sala; com código, entra pelo link compartilhado. */
+export async function enterOn(page: Page, name: string, code?: string) {
+  await page.goto(code ? `/sala/${code}` : "/");
+  await page.getByLabel("Seu nome").fill(name);
+  await page.getByRole("button", { name: code ? "Entrar na sala" : "Criar sala" }).click();
+  await expect(seat(page, name)).toBeVisible();
+}
+
+export const roomCode = (page: Page) => new URL(page.url()).pathname.split("/").pop()!;
 
 export const seat = (page: Page, name: string): Locator => page.getByText(name, { exact: true }).last();
 

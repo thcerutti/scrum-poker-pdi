@@ -1,12 +1,16 @@
 // Teste de carga (T33): simula pessoas na mesa, com o polling e o heartbeat reais, e
 // confere o que importa no uso em grupo. Uso: node test/load.mjs <url> <pessoas> <segundos>
 const [base = "http://127.0.0.1:3100", people = "15", seconds = "60"] = process.argv.slice(2);
-const API = `${base}/api/room`;
+const prefix = Math.random().toString(36).slice(2, 8);
+const { code } = await fetch(`${base}/api/rooms`, {
+  method: "POST",
+  body: JSON.stringify({ pid: `carga-${prefix}-0` }), // a pessoa 0 cria, revela e limpa
+}).then((r) => r.json());
+const API = `${base}/api/rooms/${code}`;
 const total = Number(people);
 const endAt = Date.now() + Number(seconds) * 1000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const stats = { gets: 0, posts: 0, errors: 0, shrunk: 0, roundBack: 0, notSeated: 0, latencies: [] };
-const prefix = Math.random().toString(36).slice(2, 8);
 
 async function timed(run) {
   const start = performance.now();
@@ -31,6 +35,7 @@ const get = (pid) => {
 
 async function person(index) {
   const pid = `carga-${prefix}-${index}`;
+  if (index > 0) await sleep(1000); // quem cria a sala senta antes dos demais
   await post({ action: "join", pid, name: `Carga ${index}` });
   let lastRound = 0;
   let nextBeat = Date.now() + 15_000;
@@ -64,6 +69,7 @@ async function person(index) {
 await Promise.all(Array.from({ length: total }, (_, i) => person(i)));
 const sorted = stats.latencies.sort((a, b) => a - b);
 console.log({
+  sala: code,
   leituras: stats.gets,
   escritas: stats.posts,
   erros: stats.errors,

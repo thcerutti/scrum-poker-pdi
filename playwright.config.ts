@@ -2,8 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Sem BASE_URL, sobe o app local com um Redis REST falso (com Lua de verdade).
- * Com BASE_URL, testa a URL informada. A sala é única e compartilhada, então os
- * testes rodam um de cada vez.
+ * Com BASE_URL, testa a URL informada. Cada teste cria a própria sala.
  */
 const baseURL = process.env.BASE_URL;
 const FAKE_REDIS_PORT = 8079;
