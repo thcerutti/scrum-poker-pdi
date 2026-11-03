@@ -8,6 +8,7 @@ interface SeatProps {
   participant: Participant;
   revealed: boolean;
   isMe: boolean;
+  isAdmin: boolean;
   /** Votou no extremo de uma rodada com divergência. */
   extreme: "min" | "max" | null;
 }
@@ -27,7 +28,7 @@ const tagSx = {
   whiteSpace: "nowrap",
 } as const;
 
-export function Seat({ participant, revealed, isMe, extreme }: SeatProps) {
+export function Seat({ participant, revealed, isMe, isAdmin, extreme }: SeatProps) {
   const { name, voted, vote } = participant;
   const faceUp = revealed && vote !== null;
 
@@ -88,6 +89,11 @@ export function Seat({ participant, revealed, isMe, extreme }: SeatProps) {
         >
           você
         </Typography>
+      )}
+      {isAdmin && (
+        <Box component="span" sx={tagSx} title="Revela e limpa a votação">
+          admin
+        </Box>
       )}
       {extreme && (
         <Box component="span" sx={tagSx} title={extreme === "min" ? "Menor voto da rodada" : "Maior voto da rodada"}>

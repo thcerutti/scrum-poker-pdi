@@ -20,6 +20,8 @@ export interface RoomState {
   round: number;
   revealed: boolean;
   participants: Participant[];
+  /** Id público do admin: só essa pessoa revela e limpa a votação. */
+  adminId: string | null;
   /** Id público de quem fez a requisição, para se reconhecer na mesa. */
   selfId: string | null;
   /** Se quem fez a requisição está na mesa. */

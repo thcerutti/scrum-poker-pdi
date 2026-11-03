@@ -1,10 +1,15 @@
-import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { isCardValue, type CardValue } from "@/lib/deck";
-import { getStore } from "@/lib/store";
+import { isPid, publicId } from "@/lib/participant";
+import { isRoomCode } from "@/lib/room-code";
+import { currentAdmin, getStore, NotRoomAdminError, RoomNotFoundError, type RoomStore } from "@/lib/store";
 import type { Participant, RevealGif, RoomState } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+interface RouteContext {
+  params: Promise<{ code: string }>;
+}
 
 /** Quem não manda heartbeat há esse tempo sai da mesa. Abas em segundo plano
  *  podem ter os timers limitados a 1 por minuto, por isso a folga. */
@@ -14,18 +19,11 @@ const STALE_AFTER_MS = 150_000;
 const AWAY_GRACE_MS = 20_000;
 const MAX_NAME_LENGTH = 30;
 
-const isPid = (pid: unknown): pid is string =>
-  typeof pid === "string" && /^[\w-]{1,64}$/.test(pid);
-
 const isRound = (round: unknown): round is number =>
   typeof round === "number" && Number.isSafeInteger(round) && round >= 0;
 
 const isDimension = (n: unknown): n is number =>
   typeof n === "number" && Number.isInteger(n) && n > 0 && n <= 4000;
-
-/** O `pid` é o segredo de cada navegador e nunca sai do servidor: a mesa só vê
- *  este id derivado, que não permite agir em nome da pessoa. */
-const publicId = (pid: string) => createHash("sha256").update(pid).digest("hex").slice(0, 16);
 
 const activeSince = () => Date.now() - STALE_AFTER_MS;
 
@@ -39,8 +37,10 @@ function parseGif(gif: unknown): RevealGif | null {
   return { url, width, height, title: typeof title === "string" ? title.slice(0, 200) : "" };
 }
 
-async function readState(pid: string | null): Promise<RoomState> {
-  const fields = await getStore().getAll();
+async function readState(room: RoomStore, pid: string | null): Promise<RoomState> {
+  const fields = await room.getAll();
+  if (!fields.createdAt) throw new RoomNotFoundError();
+
   const round = Number(fields.round ?? 0);
   const revealed = fields.revealed === String(round);
   const since = activeSince();
@@ -71,13 +71,21 @@ async function readState(pid: string | null): Promise<RoomState> {
   const rawGif = revealed ? fields[`gif:${round}`] : undefined;
   const gif = rawGif ? (JSON.parse(rawGif) as RevealGif) : null;
 
-  return { round, revealed, participants, selfId, seated, myVote, gif };
+  return { round, revealed, participants, adminId: currentAdmin(fields, since), selfId, seated, myVote, gif };
 }
 
-async function handle(run: () => Promise<NextResponse>) {
+async function handle({ params }: RouteContext, run: (room: RoomStore) => Promise<NextResponse>) {
   try {
-    return await run();
+    const { code } = await params;
+    if (!isRoomCode(code)) throw new RoomNotFoundError();
+    return await run(getStore().room(code));
   } catch (error) {
+    if (error instanceof RoomNotFoundError) {
+      return NextResponse.json({ error: "Sala não encontrada." }, { status: 404 });
+    }
+    if (error instanceof NotRoomAdminError) {
+      return NextResponse.json({ error: "Só o admin da sala pode revelar ou limpar a votação." }, { status: 403 });
+    }
     console.error("[scrum-poker]", error);
     return NextResponse.json(
       { error: "A sala está indisponível no momento. Tente de novo em instantes." },
@@ -86,13 +94,13 @@ async function handle(run: () => Promise<NextResponse>) {
   }
 }
 
-export function GET(request: NextRequest) {
+export function GET(request: NextRequest, context: RouteContext) {
   const pid = request.headers.get("x-participant");
-  return handle(async () => NextResponse.json(await readState(isPid(pid) ? pid : null)));
+  return handle(context, async (room) => NextResponse.json(await readState(room, isPid(pid) ? pid : null)));
 }
 
-export function POST(request: NextRequest) {
-  return handle(async () => {
+export function POST(request: NextRequest, context: RouteContext) {
+  return handle(context, async (room) => {
     // sendBeacon (usado ao fechar a aba) envia o corpo como text/plain.
     let body: unknown;
     try {
@@ -101,15 +109,14 @@ export function POST(request: NextRequest) {
       return badRequest("Corpo da requisição inválido.");
     }
     if (typeof body !== "object" || body === null) return badRequest("Corpo da requisição inválido.");
-    return act(body as Record<string, unknown>);
+    return act(room, body as Record<string, unknown>);
   });
 }
 
-async function act(body: Record<string, unknown>) {
+async function act(store: RoomStore, body: Record<string, unknown>) {
   const { action, pid } = body;
   if (!isPid(pid)) return badRequest("Identificador inválido.");
   const id = publicId(pid);
-  const store = getStore();
 
   switch (action) {
     case "join": {
@@ -122,15 +129,15 @@ async function act(body: Record<string, unknown>) {
     // Não devolve a sala: um estado lido antes de um voto, chegando depois dele,
     // desfaria o voto na tela. Quem atualiza a tela é o polling.
     case "heartbeat":
-      return NextResponse.json({ seated: await store.touch(id, Date.now()) });
+      return NextResponse.json({ seated: await store.touch(id, Date.now(), activeSince()) });
 
     // Aba fechada ou recarregada: se não voltar sinal logo, a pessoa sai da mesa.
     case "away":
-      await store.touch(id, Date.now() - STALE_AFTER_MS + AWAY_GRACE_MS);
+      await store.touch(id, Date.now() - STALE_AFTER_MS + AWAY_GRACE_MS, activeSince());
       return new NextResponse(null, { status: 204 });
 
     case "leave":
-      await store.leave(id);
+      await store.leave(id, activeSince());
       break;
 
     case "vote": {
@@ -138,13 +145,13 @@ async function act(body: Record<string, unknown>) {
       if (!isRound(round) || (value !== null && !isCardValue(value))) {
         return badRequest("Voto inválido.");
       }
-      if (!(await store.vote(id, round, value))) return conflict(pid);
+      if (!(await store.vote(id, round, value))) return conflict(store, pid);
       break;
     }
 
     case "reveal": {
       if (!isRound(body.round)) return badRequest("Rodada inválida.");
-      if (!(await store.reveal(body.round))) return conflict(pid);
+      if (!(await store.reveal(id, body.round, activeSince()))) return conflict(store, pid);
       break;
     }
 
@@ -157,7 +164,7 @@ async function act(body: Record<string, unknown>) {
 
     case "clear": {
       if (!isRound(body.round)) return badRequest("Rodada inválida.");
-      if (!(await store.clear(body.round, activeSince()))) return conflict(pid);
+      if (!(await store.clear(id, body.round, activeSince()))) return conflict(store, pid);
       break;
     }
 
@@ -165,16 +172,16 @@ async function act(body: Record<string, unknown>) {
       return badRequest("Ação desconhecida.");
   }
 
-  return NextResponse.json(await readState(pid));
+  return NextResponse.json(await readState(store, pid));
 }
 
 function badRequest(error: string) {
   return NextResponse.json({ error }, { status: 400 });
 }
 
-async function conflict(pid: string) {
+async function conflict(room: RoomStore, pid: string) {
   return NextResponse.json(
-    { error: "A votação já foi revelada ou reiniciada.", state: await readState(pid) },
+    { error: "A votação já foi revelada ou reiniciada.", state: await readState(room, pid) },
     { status: 409 },
   );
 }
