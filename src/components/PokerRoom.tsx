@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -36,6 +37,7 @@ import { Seat } from "./Seat";
 
 const POLL_INTERVAL_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 15_000;
+const RETRY_INTERVAL_MS = 3000;
 const API = "/api/room";
 
 // Halo no acento do segmento chamando para revelar; não é sombra de elevação.
@@ -51,21 +53,26 @@ class ConflictError extends Error {
   }
 }
 
-async function fetchState(url: string): Promise<RoomState> {
-  const res = await fetch(url, { cache: "no-store" });
+async function fetchState([url, pid]: readonly [string, string]): Promise<RoomState> {
+  const res = await fetch(url, { cache: "no-store", headers: { "x-participant": pid } });
   if (!res.ok) throw new Error("Falha ao carregar a sala.");
   return res.json();
 }
 
-async function postAction(payload: RoomAction): Promise<RoomState> {
-  const res = await fetch(API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const json = await res.json();
-  if (res.status === 409) throw new ConflictError(json.error, json.state);
-  if (!res.ok) throw new Error(json.error ?? "Algo deu errado.");
+async function postAction<T = RoomState>(payload: RoomAction): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new Error("Sem conexão com a sala. Tente novamente.");
+  }
+  const json = await res.json().catch(() => null);
+  if (res.status === 409 && json?.state) throw new ConflictError(json.error, json.state);
+  if (!res.ok) throw new Error(json?.error ?? "Algo deu errado. Tente novamente.");
   return json;
 }
 
@@ -75,39 +82,61 @@ interface PokerRoomProps {
 }
 
 export function PokerRoom({ user, onLeave }: PokerRoomProps) {
-  const { data, error, mutate } = useSWR<RoomState>(`${API}?pid=${user.id}`, fetchState, {
+  const { data, error, mutate } = useSWR<RoomState>([API, user.id] as const, fetchState, {
     refreshInterval: POLL_INTERVAL_MS,
+    // Tem que ser menor que o polling; igual ao padrão (2 s), um a cada dois ciclos seria descartado.
+    dedupingInterval: POLL_INTERVAL_MS - 500,
+    // Sem isso, offline o polling só pararia, sem erro nem aviso na tela.
+    refreshWhenOffline: true,
     keepPreviousData: true,
+    onErrorRetry: (_error, _key, _config, revalidate, { retryCount }) => {
+      setTimeout(() => revalidate({ retryCount }), RETRY_INTERVAL_MS);
+    },
   });
   const [confirmClear, setConfirmClear] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const join = useCallback(
-    () => postAction({ action: "join", pid: user.id, name: user.name }).then((s) => mutate(s, { revalidate: false })),
-    [user.id, user.name, mutate],
-  );
+  const join = useCallback(async () => {
+    await postAction({ action: "join", pid: user.id, name: user.name });
+    await mutate();
+  }, [user.id, user.name, mutate]);
 
-  // Presença: entra ao abrir, renova periodicamente e sai ao fechar a aba.
+  // Presença: entra ao abrir, renova periodicamente e avisa ao fechar a aba.
   useEffect(() => {
-    join().catch(() => {});
-    const interval = setInterval(() => join().catch(() => {}), HEARTBEAT_INTERVAL_MS);
-    const onVisible = () => document.visibilityState === "visible" && join().catch(() => {});
+    const enter = () => join().catch(() => {});
+    const beat = () =>
+      postAction<{ seated: boolean }>({ action: "heartbeat", pid: user.id })
+        .then(({ seated }) => (seated ? undefined : join()))
+        .catch(() => {});
+    const onVisible = () => document.visibilityState === "visible" && enter();
+    const onPageShow = (event: PageTransitionEvent) => event.persisted && enter();
+    // "away" e não "leave": isto também dispara ao recarregar ou fechar uma aba
+    // duplicada, e nesses casos a pessoa continua na mesa com o voto.
     const onPageHide = () =>
-      navigator.sendBeacon(API, JSON.stringify({ action: "leave", pid: user.id } satisfies RoomAction));
+      navigator.sendBeacon(API, JSON.stringify({ action: "away", pid: user.id } satisfies RoomAction));
+
+    enter();
+    const interval = setInterval(beat, HEARTBEAT_INTERVAL_MS);
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onPageShow);
     window.addEventListener("pagehide", onPageHide);
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onPageShow);
       window.removeEventListener("pagehide", onPageHide);
     };
   }, [join, user.id]);
 
-  // Se o servidor nos removeu (ex.: aba ficou muito tempo suspensa), volta para a mesa.
-  const iAmSeated = data?.participants.some((p) => p.id === user.id) ?? true;
+  // Se saímos da mesa (ex.: aba ficou muito tempo suspensa), volta sozinho.
+  const seated = data?.seated ?? true;
   useEffect(() => {
-    if (!iAmSeated) join().catch(() => {});
-  }, [iAmSeated, join]);
+    if (!seated) join().catch(() => {});
+  }, [seated, join]);
+
+  // A rodada mudou com o diálogo aberto: confirmar agora limparia a rodada seguinte.
+  const currentRound = data?.round;
+  useEffect(() => setConfirmClear(false), [currentRound]);
 
   const run = useCallback(
     async (payload: RoomAction, optimisticData?: (current: RoomState) => RoomState) => {
@@ -145,7 +174,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
     );
   }
 
-  const { round, revealed, participants, myVote } = data;
+  const { round, revealed, participants, myVote, selfId } = data;
   const votedCount = participants.filter((p) => p.voted).length;
   const allVoted = participants.length > 0 && votedCount === participants.length;
 
@@ -154,12 +183,13 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
     run({ action: "vote", pid: user.id, round, value: next }, (current) => ({
       ...current,
       myVote: next,
-      participants: current.participants.map((p) => (p.id === user.id ? { ...p, voted: next !== null } : p)),
+      participants: current.participants.map((p) => (p.id === selfId ? { ...p, voted: next !== null } : p)),
     }));
   };
 
   const reveal = async () => {
-    const state = await run({ action: "reveal", pid: user.id, round }, (current) => ({ ...current, revealed: true }));
+    // Sem atualização otimista: os valores só existem na resposta, e a tela mostraria "Nenhum voto".
+    const state = await run({ action: "reveal", pid: user.id, round });
     if (!state?.revealed || state.gif) return;
     // Quem revela busca o GIF (o KLIPY exige a busca no navegador) e o compartilha com a sala.
     const votes = state.participants.flatMap((p) => (p.vote ? [p.vote] : []));
@@ -170,7 +200,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
 
   const clear = () => {
     setConfirmClear(false);
-    run({ action: "clear", pid: user.id }, (current) => ({
+    run({ action: "clear", pid: user.id, round }, (current) => ({
       ...current,
       round: current.round + 1,
       revealed: false,
@@ -213,6 +243,12 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
         {/* Seções empilhadas na largura toda: lado a lado, a altura do resultado
             (que cresce com o GIF) deixava um vão embaixo da mesa. */}
         <Stack spacing={3}>
+          {error && (
+            <Alert severity="warning" variant="outlined">
+              Sem conexão com a sala. Tentando reconectar…
+            </Alert>
+          )}
+
           <Paper sx={{ p: { xs: 2, sm: 3 } }}>
             <Stack direction="row" sx={{ alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
               <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
@@ -238,7 +274,7 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
               }}
             >
               {participants.map((p) => (
-                <Seat key={p.id} participant={p} revealed={revealed} isMe={p.id === user.id} extreme={extremeOf(p.vote)} />
+                <Seat key={p.id} participant={p} revealed={revealed} isMe={p.id === selfId} extreme={extremeOf(p.vote)} />
               ))}
             </Box>
 
@@ -331,7 +367,8 @@ export function PokerRoom({ user, onLeave }: PokerRoomProps) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmClear(false)}>Cancelar</Button>
-          <Button onClick={clear} variant="contained" autoFocus>
+          {/* desabilitado na animação de saída: um clique duplo não dispara duas vezes */}
+          <Button onClick={clear} variant="contained" autoFocus disabled={!confirmClear}>
             Limpar
           </Button>
         </DialogActions>

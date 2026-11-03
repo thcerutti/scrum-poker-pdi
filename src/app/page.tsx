@@ -44,6 +44,16 @@ export default function Home() {
     const loaded = loadUser();
     setUser(loaded);
     setSeated(loaded.name !== "");
+
+    // "Sair" em uma aba vale para todas: o id é o mesmo, então é a mesma pessoa.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return;
+      const next = loadUser();
+      setUser(next);
+      if (next.name === "") setSeated(false);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   if (!user) return null;
