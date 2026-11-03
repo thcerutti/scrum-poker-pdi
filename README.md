@@ -16,11 +16,18 @@ quanto mais partes a entrega tem, mais pontos (Fibonacci).
 
 ## Como funciona
 
-- Cada pessoa entra com o nome (fica salvo no navegador) e escolhe uma carta.
-  Clicar de novo na carta retira o voto.
+- Na tela inicial, cada pessoa informa o nome (fica salvo no navegador) e cria uma sala
+  ou entra com um código. Cada sala tem um código de 6 caracteres e um link
+  (`/sala/ABC234`) para compartilhar pelo botão ao lado do nome do app, então vários
+  times podem estimar ao mesmo tempo. A sala expira depois de um dia sem uso.
+- Na sala, cada pessoa escolhe uma carta. Clicar de novo na carta retira o voto.
 - A mesa mostra quem já votou (carta virada) sem revelar o valor.
-- **Revelar votos** pode ser clicado por qualquer pessoa a qualquer momento; o botão
-  fica verde quando todos votaram.
+- Quem cria a sala é o **admin**, destacado na mesa. **Revelar votos** e **Limpar votação**
+  só aparecem para o admin, e o servidor recusa essas ações vindas de outra pessoa.
+- Quando o admin sai (clicando em **Sair**, fechando a aba ou ficando sem sinal), o cargo
+  passa para quem entrou primeiro entre os presentes, que é avisado na tela. Quem volta
+  entra como participante comum, no fim da fila. Recarregar a página não muda nada.
+  Se ninguém estava na mesa, quem chegar primeiro assume, salvo se for o próprio admin.
 - Depois de revelar, o painel de resultado indica:
   - **Consenso**: todos na mesma carta;
   - **Pequena divergência**: votos em cartas vizinhas (ex.: 3 e 5);
@@ -30,7 +37,7 @@ quanto mais partes a entrega tem, mais pontos (Fibonacci).
 - Ao revelar, aparece um GIF do [KLIPY](https://klipy.com) que combina com o resultado
   (comemoração no consenso, confusão na divergência). Quem clica em revelar busca o GIF
   e ele é compartilhado com a sala, então todos veem o mesmo.
-- **Limpar votação** pede confirmação e inicia uma nova rodada para todos.
+- Limpar a votação pede confirmação e inicia uma nova rodada para todos.
 - Recarregar a página ou fechar uma aba duplicada não tira ninguém da mesa nem apaga o
   voto. Quem fecha a última aba sai em ~20 s; quem fica sem sinal sai em ~2,5 min e
   recupera o voto se voltar na mesma rodada. **Sair** remove a pessoa e o voto na hora.
@@ -39,7 +46,7 @@ quanto mais partes a entrega tem, mais pontos (Fibonacci).
   aviso: basta votar de novo na rodada nova.
 
 A sincronização é por polling (1,5 s) contra uma rota de API que guarda a sala em
-um hash do Redis. Há uma única sala.
+um hash do Redis, um por sala.
 
 ## Desenvolvimento
 
@@ -61,8 +68,8 @@ BASE_URL=https://sua-url.vercel.app npm run test:e2e   # o mesmo, em outra URL
 node test/load.mjs https://sua-url.vercel.app 15 120   # carga: URL, pessoas, segundos
 ```
 
-A sala é única: os testes em `BASE_URL` e o teste de carga interferem em quem estiver
-usando a URL no momento.
+Os testes em `BASE_URL` e o de carga criam salas próprias, então não interferem em quem
+estiver usando a URL.
 
 ## Deploy na Vercel
 
